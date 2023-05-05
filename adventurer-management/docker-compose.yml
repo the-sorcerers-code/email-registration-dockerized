@@ -1,0 +1,41 @@
+version: "3"
+services:
+  adventurers-api:
+    build: .
+    restart: always
+    container_name: adventurers-management-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      - mysqldbv2
+    env_file:
+      - .env
+    environment:
+      SPRING_APPLICATION_JSON: '{
+        "spring.datasource.url"  : "jdbc:mysql://mysqldbv2:$MYSQLDB_PORT/$MYSQL_DATABASE?useSSL=false",
+        "spring.datasource.username" : "$MYSQLDB_USER",
+        "spring.datasource.password" : "$MYSQLDB_PASSWORD",
+        "spring.datasource.driver-class-name": "com.mysql.cj.jdbc.Driver",
+        "server.port": $SERVER_PORT,
+        "spring.jpa.hibernate.ddl-auto" : "update",
+        "notification.service.url": "$NOTIFICATION_SERVICE_URL"
+      }'
+    networks:
+      - notifications_sorcerers_network
+
+  mysqldbv2:
+    container_name: mysqldbv2
+    image: mysql:5.7
+    restart: always
+    platform: linux/x86_64
+    ports:
+      - "3308:3308"
+    env_file:
+      - .env
+    networks:
+      - notifications_sorcerers_network
+
+networks:
+  notifications_sorcerers_network:
+    external: true
+
